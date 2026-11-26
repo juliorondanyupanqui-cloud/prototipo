@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id_usuario      Int       @id @default(autoincrement())
+  nombre_completo String
+  dni_documento   String?   @unique @db.VarChar(15)
+  telefono        String
+  rol             String    @default("CLIENTE") @db.VarChar(20)
+  fecha_registro  DateTime  @default(now())
+  email           String?   @unique
+  password_hash   String?
+  reservas        Reserva[]
+
+  @@map("usuarios")
+}
+
+model Cancha {
+  id_cancha         Int       @id @default(autoincrement())
+  codigo_interno    String    @unique @db.VarChar(30)
+  nombre            String    @db.VarChar(100)
+  categoria         String    @db.VarChar(50)
+  precio_hora_dia   Decimal   @db.Decimal(8, 2)
+  precio_hora_noche Decimal   @db.Decimal(8, 2)
+  imagen_url        String    @db.VarChar(255)
+  estado_operativo  String    @default("ACTIVA") @db.VarChar(20)
+  reservas          Reserva[]
+
+  @@map("canchas")
+}
+
+model Reserva {
+  id_reserva       Int      @id @default(autoincrement())
+  codigo_ticket    String   @unique
+  id_usuario       Int
+  id_cancha        Int
+  fecha_programada String
+  hora_inicio      String
+  hora_fin         String
+  duracion_horas   Decimal  @db.Decimal(4, 1)
+  inicio_timestamp BigInt
+  fin_timestamp    BigInt
+  precio_total     Decimal  @db.Decimal(8, 2)
+  estado           String   @default("CONFIRMADA")
+  creado_en        DateTime @default(now())
+  cancha           Cancha   @relation(fields: [id_cancha], references: [id_cancha])
+  usuario          Usuario  @relation(fields: [id_usuario], references: [id_usuario])
+
+  @@map("reservas")
+}

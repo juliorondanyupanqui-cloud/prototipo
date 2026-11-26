@@ -1,0 +1,1267 @@
+/* =========================================================
+    COMPLEJO DEPORTIVO LA VIDENA - estilos.css
+    Enfoque Mobile First: los estilos base son para celulares
+    y los @media (min-width) agregan mejoras en pantallas mayores.
+   ========================================================= */
+
+/* ---------- 1. VARIABLES Y REINICIO ---------- */
+:root {
+    --verde: #1faa4b;
+    --verde-oscuro: #0f6b2e;
+    --verde-claro: #e8f6ec;
+    --oscuro: #0e1a14;
+    --oscuro-2: #16261d;
+    --blanco: #ffffff;
+    --gris: #f3f5f4;
+    --texto: #1d2a22;
+    --texto-suave: #4a5a50;
+    --texto-opcional: #5b6b61;
+    --acento: #ffd23f;
+    --aviso: #fff9e0;
+    --borde: #c5d0c9;
+    --borde-tabla: #dfe5e1;
+    --error: #c0392b;
+    --pie-muted: #b8c4bc;
+    --radio: 14px;
+    --sombra: 0 4px 14px rgba(0, 0, 0, 0.15);
+    --sombra-hover: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4.5rem; /* evita que el menú fijo tape los títulos */
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.6;
+    color: var(--texto);
+    background: var(--blanco);
+    overflow-x: clip;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+ul { list-style: none; }
+a { color: inherit; text-decoration: none; }
+
+/* ---------- 2. UTILIDADES ---------- */
+.contenedor {
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.texto-centrado { text-align: center; }
+
+.solo-lectores {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.saltar-contenido {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    background: var(--acento);
+    color: var(--oscuro);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    z-index: 100;
+    font-weight: bold;
+}
+.saltar-contenido:focus-visible { top: 0.5rem; }
+
+/* Foco visible para teclado */
+a:focus-visible,
+button:focus-visible,
+.menu-check:focus-visible + .menu-boton {
+    outline: 3px solid var(--acento);
+    outline-offset: 3px;
+}
+
+/* ---------- 3. ENCABEZADO Y MENÚ ---------- */
+.encabezado {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--oscuro);
+    color: var(--blanco);
+    border-bottom: 3px solid var(--verde);
+}
+
+.barra {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: 4rem;
+}
+
+.marca {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+.marca-pequena {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--acento);
+}
+.marca-nombre {
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Checkbox oculto: solo sirve para guardar el estado abierto/cerrado */
+.menu-check {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.menu-boton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 2px solid var(--verde);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Icono de hamburguesa dibujado con un span y sus pseudoelementos */
+.menu-icono,
+.menu-icono::before,
+.menu-icono::after {
+    display: block;
+    width: 1.4rem;
+    height: 3px;
+    background: var(--blanco);
+    border-radius: 2px;
+    transition: transform 0.3s, background 0.3s;
+}
+.menu-icono { position: relative; }
+.menu-icono::before,
+.menu-icono::after {
+    content: "";
+    position: absolute;
+    left: 0;
+}
+.menu-icono::before { top: -7px; }
+.menu-icono::after { top: 7px; }
+
+/* Cuando el checkbox está marcado, el icono se convierte en una X */
+.menu-check:checked + .menu-boton .menu-icono { background: transparent; }
+.menu-check:checked + .menu-boton .menu-icono::before { transform: translateY(7px) rotate(45deg); }
+.menu-check:checked + .menu-boton .menu-icono::after { transform: translateY(-7px) rotate(-45deg); }
+
+/* Menú móvil: oculto por defecto, aparece al marcar el checkbox */
+.menu {
+    display: none;
+    width: 100%;
+    padding-bottom: 0.75rem;
+}
+.menu-check:checked ~ .menu { display: block; }
+
+.menu a {
+    display: block;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--oscuro-2);
+    transition: color 0.3s, background 0.3s, padding-left 0.3s;
+}
+.menu a:hover,
+.menu a:focus-visible {
+    color: var(--acento);
+    background: var(--oscuro-2);
+    padding-left: 1rem;
+}
+
+/* ---------- 4. PORTADA ---------- */
+.portada {
+    position: relative;
+    min-height: 80vh;
+    min-height: 80dvh;
+    display: flex;
+    align-items: center;
+    color: var(--blanco);
+    overflow: hidden;
+}
+
+.portada-imagen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: -2;
+}
+
+/* Capa oscura con gradiente para que el texto se lea bien */
+.portada::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(14, 26, 20, 0.55), rgba(14, 26, 20, 0.85));
+    z-index: -1;
+}
+
+.portada-contenido {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    animation: entrada 0.9s ease-out both;
+}
+
+.portada-etiqueta {
+    display: inline-block;
+    background: var(--verde-oscuro);
+    padding: 0.25rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.portada h1 {
+    font-size: clamp(2.2rem, 1.4rem + 3.5vw, 4.5rem);
+    line-height: 1.1;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.portada-frase {
+    margin: 1rem 0 1.5rem;
+    font-size: 1.1rem;
+    max-width: 36rem;
+}
+
+.portada-botones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* ---------- 5. BOTONES ---------- */
+.boton {
+    display: inline-block;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    padding: 0.85rem 1.6rem;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    transition: background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+.boton:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra);
+}
+.boton-primario { background: var(--verde-oscuro); color: var(--blanco); }
+.boton-primario:hover { background: var(--acento); color: var(--oscuro); }
+.boton-secundario { border-color: var(--blanco); color: var(--blanco); }
+.boton-secundario:hover { background: var(--blanco); color: var(--oscuro); }
+.boton-completo { width: 100%; }
+
+/* ---------- 6. SECCIONES ---------- */
+.seccion { padding: 3rem 0; }
+.seccion-gris { background: var(--gris); }
+.seccion-oscura {
+    background: linear-gradient(135deg, var(--oscuro), var(--verde-oscuro));
+    color: var(--blanco);
+}
+
+.titulo-seccion {
+    font-size: 1.9rem;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+}
+/* Línea verde decorativa debajo del título */
+.titulo-seccion::after {
+    content: "";
+    display: block;
+    width: 3.5rem;
+    height: 4px;
+    background: var(--verde);
+    margin-top: 0.4rem;
+    border-radius: 2px;
+}
+.texto-centrado .titulo-seccion::after { margin-left: auto; margin-right: auto; }
+
+.subtitulo-seccion { margin-bottom: 2rem; color: var(--texto-suave); }
+
+.titulo-grupo {
+    font-size: 1.3rem;
+    margin: 1.5rem 0 1rem;
+    color: var(--verde-oscuro);
+}
+
+/* ---------- 7. TARJETAS DE CANCHAS ---------- */
+.rejilla-canchas {
+    display: grid;
+    grid-template-columns: 1fr;   /* móvil: una columna */
+    gap: 1.5rem;
+}
+
+.tarjeta {
+    background: var(--blanco);
+    border-radius: var(--radio);
+    overflow: hidden;
+    box-shadow: var(--sombra);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.tarjeta:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--sombra-hover);
+}
+
+.tarjeta-imagen {
+    position: relative;
+    overflow: hidden;
+    height: 220px;
+}
+.tarjeta-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+.tarjeta:hover .tarjeta-imagen img { transform: scale(1.05); }
+
+/* Ajuste de encuadre por foto */
+.img-futsal1 { object-position: center 60%; }
+.img-futsal2 { object-position: center 50%; }
+.img-voley { object-position: center 65%; }
+
+.etiqueta {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background: var(--oscuro);
+    color: var(--acento);
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.tarjeta-cuerpo { padding: 1.25rem; }
+.tarjeta-cuerpo h4 { font-size: 1.3rem; margin-bottom: 0.4rem; }
+.tarjeta-cuerpo p { color: var(--texto-suave); margin-bottom: 1rem; }
+
+/* Precios día / noche (listas de tarjetas y cajas del selector) */
+.precios {
+    display: flex;
+    gap: 0.75rem;
+}
+.precios li,
+.precio-caja {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.6rem;
+    border-radius: 10px;
+    background: var(--verde-claro);
+    border: 2px solid var(--verde);
+}
+.precios li:last-child,
+.precio-noche {
+    background: var(--oscuro);
+    border-color: var(--oscuro);
+    color: var(--blanco);
+}
+.precio-turno { font-size: 0.85rem; font-weight: bold; text-transform: uppercase; }
+.precio-valor { font-size: 1.6rem; font-weight: bold; }
+.precios li:last-child .precio-valor,
+.precio-noche .precio-valor { color: var(--acento); }
+
+/* ---------- 8. TABLA DE TARIFAS ---------- */
+/* Si la tabla no cabe en pantallas muy pequeñas, solo se desplaza ella */
+.tabla-contenedor {
+    overflow-x: auto;
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+}
+
+.tabla-tarifas {
+    width: 100%;
+    min-width: 20rem;
+    border-collapse: collapse;
+    background: var(--blanco);
+}
+.tabla-tarifas th,
+.tabla-tarifas td {
+    padding: 0.9rem 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid var(--borde-tabla);
+}
+.tabla-tarifas thead th {
+    background: var(--oscuro);
+    color: var(--blanco);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+.tabla-tarifas tbody th { text-align: left; }
+.tabla-tarifas td { white-space: nowrap; font-size: 1.2rem; font-weight: bold; color: var(--verde-oscuro); }
+.tabla-tarifas tbody tr { transition: background 0.3s; }
+.tabla-tarifas tbody tr:hover { background: var(--verde-claro); }
+.tabla-tarifas tbody tr:nth-child(even) { background: var(--gris); }
+.tabla-tarifas tbody tr:nth-child(even):hover { background: var(--verde-claro); }
+
+.nota,
+.aviso-demo {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid var(--acento);
+    background: var(--aviso);
+    font-size: 0.95rem;
+}
+
+/* ---------- 9. SOBRE EL COMPLEJO ---------- */
+.texto-info {
+    max-width: 42rem;
+    margin: 1rem auto 0;
+    font-size: 1.1rem;
+}
+
+/* ---------- 10. CONTACTO ---------- */
+.rejilla-contacto {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+.dato {
+    background: var(--blanco);
+    padding: 1.25rem;
+    border-radius: var(--radio);
+    border-top: 4px solid var(--verde);
+    box-shadow: var(--sombra);
+}
+.dato h3 { margin-bottom: 0.3rem; }
+.dato p,
+.dato address {
+    color: var(--verde-oscuro);
+    font-style: normal;
+}
+.dato a, .enlace-contacto {
+    color: var(--verde-oscuro);
+    font-weight: bold;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+.dato a:hover, .enlace-contacto:hover {
+    color: var(--verde);
+    text-decoration: none;
+}
+
+/* ---------- 11. RESERVAS ---------- */
+.selector {
+    border: 0;
+    margin: 0 0 2.5rem;
+    padding: 0;
+    min-width: 0;
+    width: 100%;
+}
+.selector-leyenda {
+    float: none;
+    width: 100%;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--verde-oscuro);
+    margin-bottom: 1rem;
+    padding: 0;
+}
+
+.rejilla-opciones {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.opcion { display: flex; flex-direction: column; gap: 0.75rem; }
+
+/* El radio real se oculta, pero sigue siendo accesible con el teclado */
+.opcion-radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.opcion-tarjeta {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background: var(--blanco);
+    border: 3px solid transparent;
+    border-radius: var(--radio);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--sombra);
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+}
+.opcion-tarjeta:hover { transform: translateY(-5px); box-shadow: var(--sombra-hover); }
+
+.opcion-radio:checked + .opcion-tarjeta { border-color: var(--verde); box-shadow: 0 0 0 4px var(--verde-claro), var(--sombra); }
+.opcion-radio:focus-visible + .opcion-tarjeta { outline: 3px solid var(--acento); outline-offset: 3px; }
+
+.opcion-imagen { position: relative; display: block; height: 180px; overflow: hidden; }
+.opcion-imagen img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Marca que solo aparece cuando la tarjeta está seleccionada (no depende solo del color) */
+.opcion-marca {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    background: var(--verde-oscuro);
+    color: var(--blanco);
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+.opcion-radio:checked + .opcion-tarjeta .opcion-marca { opacity: 1; transform: translateY(0); }
+
+.opcion-cuerpo { display: block; padding: 1rem; }
+.opcion-nombre { display: block; font-size: 1.2rem; font-weight: bold; margin-bottom: 0.75rem; }
+
+.precio-caja { padding: 0.5rem; }
+
+.reserva-formulario {
+    background: var(--blanco);
+    padding: 1.25rem;
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    border-top: 4px solid var(--verde);
+}
+.reserva-formulario .titulo-grupo { margin-top: 0; }
+
+.aviso-demo {
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+}
+
+.formulario {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+.campo { display: flex; flex-direction: column; gap: 0.35rem; }
+.campo label { font-weight: bold; }
+.opcional { font-weight: normal; color: var(--texto-opcional); }
+
+.campo input,
+.campo select,
+.campo textarea {
+    width: 100%;
+    min-height: 3rem;          /* alto cómodo para tocar con el dedo */
+    padding: 0.7rem 0.9rem;
+    font: inherit;
+    border: 2px solid var(--borde);
+    border-radius: 10px;
+    background: var(--blanco);
+    color: var(--texto);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.campo textarea { resize: vertical; }
+.campo input:focus-visible,
+.campo select:focus-visible,
+.campo textarea:focus-visible {
+    outline: none;
+    border-color: var(--verde-oscuro);
+    box-shadow: 0 0 0 4px var(--verde-claro);
+}
+/* Marca los campos con datos inválidos solo después de que el usuario escribió algo (excluye date y time vacíos) */
+.campo input:not([type="date"]):not([type="time"]):not(:placeholder-shown):invalid {
+    border-color: var(--error);
+}
+
+.reserva-formulario .nota { margin-top: 1.25rem; }
+
+.pago {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border-radius: var(--radio);
+    background: var(--oscuro);
+    color: var(--blanco);
+    border-left: 6px solid var(--acento);
+}
+.pago h3 { color: var(--acento); margin-bottom: 0.4rem; }
+
+/* ---------- 11.1. CHECKOUT INTERACTIVO Y TICKET EN VIVO ---------- */
+.cabecera-reserva {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--gris);
+}
+.cabecera-reserva .titulo-grupo { margin: 0; }
+
+.insignias-horario {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.insignia {
+    font-size: 0.82rem;
+    font-weight: bold;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+}
+.insignia-dia {
+    background: var(--verde-claro);
+    color: var(--verde-oscuro);
+    border: 1px solid var(--verde);
+}
+.insignia-noche {
+    background: var(--oscuro);
+    color: var(--acento);
+}
+
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+    background: #f9fbfa;
+    border: 1.5px solid var(--borde);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.campo input:hover,
+.campo select:hover,
+.campo textarea:hover {
+    border-color: var(--verde);
+    background: var(--blanco);
+}
+
+.selector-duracion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+.chips-duracion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.chip-hora {
+    background: var(--gris);
+    color: var(--texto);
+    border: 2px solid var(--borde);
+    padding: 0.65rem 1rem;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.chip-hora:hover {
+    border-color: var(--verde);
+}
+.chip-hora.activo {
+    background: var(--verde-oscuro);
+    color: var(--blanco);
+    border-color: var(--verde-oscuro);
+    box-shadow: 0 3px 10px rgba(15, 107, 46, 0.25);
+}
+.selector-duracion input {
+    flex: 1;
+    min-width: 120px;
+}
+
+.ticket-resumen {
+    background: linear-gradient(160deg, var(--oscuro) 0%, var(--oscuro-2) 100%);
+    color: var(--blanco);
+    border-radius: var(--radio);
+    padding: 1.5rem;
+    box-shadow: var(--sombra-hover);
+    border-top: 5px solid var(--acento);
+    position: sticky;
+    top: 5.5rem;
+}
+.ticket-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--acento);
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+.ticket-cabecera h4 {
+    font-size: 1.35rem;
+    margin-bottom: 0.2rem;
+}
+.ticket-cabecera p {
+    font-size: 0.9rem;
+    color: var(--pie-muted);
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.ticket-cuerpo {
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+}
+.ticket-fila {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.92rem;
+}
+.ticket-fila span { color: var(--pie-muted); }
+
+.ticket-total {
+    padding-top: 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.precio-gigante {
+    font-size: 2rem;
+    color: var(--acento);
+    line-height: 1;
+}
+
+.alerta-exito {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    border-radius: 10px;
+    background: rgba(31, 170, 75, 0.2);
+    border: 1px solid var(--verde);
+    color: #e8f6ec;
+    font-size: 0.88rem;
+}
+
+/* ---------- 11.2. SISTEMA DE PESTAÑAS (SPA TABS), OCUPACIÓN E HISTORIAL ---------- */
+.portal-reservas {
+    background: var(--blanco);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+    border-top: 4px solid var(--verde);
+}
+
+.tabs-barra {
+    display: flex;
+    flex-wrap: wrap;
+    background: var(--oscuro);
+    border-bottom: 2px solid var(--oscuro-2);
+}
+
+.tab-boton {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: transparent;
+    color: var(--pie-muted);
+    font: inherit;
+    font-weight: bold;
+    border: none;
+    border-bottom: 4px solid transparent;
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.tab-boton:hover {
+    background: var(--oscuro-2);
+    color: var(--blanco);
+}
+.tab-boton.activo {
+    background: var(--oscuro-2);
+    color: var(--acento);
+    border-bottom-color: var(--verde);
+}
+
+.tab-contador {
+    background: var(--verde-oscuro);
+    color: var(--blanco);
+    font-size: 0.78rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+}
+.tab-boton.activo .tab-contador {
+    background: var(--acento);
+    color: var(--oscuro);
+}
+
+/* Estados de validación en tiempo real para el celular */
+.texto-validacion {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    margin-top: 0.15rem;
+    transition: color 0.2s ease;
+}
+.texto-validacion.error {
+    color: var(--error);
+    font-weight: bold;
+}
+.texto-validacion.valido {
+    color: var(--verde-oscuro);
+    font-weight: bold;
+}
+
+.campo input.input-error {
+    border-color: var(--error) !important;
+    background-color: #fff8f8;
+}
+.campo input.input-valido {
+    border-color: var(--verde) !important;
+}
+
+.tab-panel {
+    padding: 1.5rem;
+}
+@media (min-width: 768px) {
+    .tab-panel { padding: 2rem; }
+}
+
+.texto-suave-pequeno {
+    font-size: 0.9rem;
+    color: var(--texto-suave);
+    margin-top: 0.2rem;
+}
+
+/* Estados de disponibilidad y alertas de cruce horario */
+.estado-libre { color: #2ecc71; }
+.estado-ocupado { color: #ff6b6b; }
+
+.alerta-conflicto {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    background: #fdf2f2;
+    border-left: 4px solid var(--error);
+    color: var(--error);
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.boton:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Panel 2: Filtros y Lista de Ocupación */
+.filtros-ocupacion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.input-filtro {
+    padding: 0.55rem 0.85rem;
+    border: 1.5px solid var(--borde);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.9rem;
+    background: var(--blanco);
+}
+.lista-ocupacion {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.bloque-ocupado {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--gris);
+    border-left: 4px solid var(--oscuro);
+    border-radius: 10px;
+}
+
+/* Panel 3: Historial de Reservas y Botones de Acción */
+.resumen-metricas-historial {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+.boton-peligro-borde {
+    background: transparent;
+    color: var(--error);
+    border: 1.5px solid var(--error);
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.boton-peligro-borde:hover {
+    background: var(--error);
+    color: var(--blanco);
+}
+
+.rejilla-historial {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+@media (min-width: 768px) {
+    .rejilla-historial { grid-template-columns: repeat(2, 1fr); }
+}
+
+.tarjeta-reserva-guardada {
+    background: var(--gris);
+    border: 1px solid var(--borde-tabla);
+    border-top: 4px solid var(--verde-oscuro);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.85rem;
+}
+.reserva-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.codigo-reserva {
+    font-family: monospace;
+    font-size: 0.8rem;
+    background: var(--oscuro);
+    color: var(--acento);
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+}
+.reserva-datos p {
+    font-size: 0.9rem;
+    color: var(--texto-suave);
+    margin-bottom: 0.25rem;
+}
+.reserva-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--borde);
+}
+.btn-whatsapp-card {
+    background: #25d366;
+    color: #0e1a14;
+    font-weight: bold;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.btn-whatsapp-card:hover { background: #1ebe5b; }
+
+.btn-imprimir-card {
+    background: var(--oscuro);
+    color: var(--blanco);
+    border: 1px solid var(--borde);
+    font-weight: bold;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.btn-imprimir-card:hover {
+    background: var(--verde-oscuro);
+    color: var(--blanco);
+}
+
+.estado-vacio {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2.5rem 1rem;
+    background: var(--gris);
+    border-radius: 10px;
+    color: var(--texto-suave);
+}
+
+/* ---------- 12. PIE DE PÁGINA ---------- */
+.pie {
+    background: var(--oscuro);
+    color: var(--blanco);
+    border-top: 3px solid var(--verde);
+    padding: 2rem 0 1.5rem;
+}
+.pie-contenido {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+}
+.pie-marca { font-size: 1.3rem; font-weight: bold; text-transform: uppercase; }
+.pie ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1.5rem; }
+.pie a { transition: color 0.3s; }
+.pie a:hover,
+.pie a:focus-visible { color: var(--acento); }
+.pie-derechos { font-size: 0.85rem; color: var(--pie-muted); }
+
+/* ---------- 13. ANIMACIÓN DE ENTRADA ---------- */
+@keyframes entrada {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+    MEDIA QUERIES (Mobile First: se usa min-width)
+   ========================================================= */
+
+/* Celulares grandes / tablets pequeñas */
+@media (min-width: 600px) {
+    .portada-botones { flex-direction: row; flex-wrap: wrap; }
+    .rejilla-contacto { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Tablets: 768px */
+@media (min-width: 768px) {
+    .contenedor { padding: 0 1.5rem; }
+    .rejilla-canchas { grid-template-columns: repeat(2, 1fr); }
+    .tarjeta-imagen { height: 240px; }
+
+    /* Tarjeta ancha de vóley y básquet: imagen a la izquierda, texto a la derecha */
+    .tarjeta-ancha { flex-direction: row; }
+    .tarjeta-ancha .tarjeta-imagen { flex: 1 1 50%; height: auto; min-height: 280px; }
+    .tarjeta-ancha .tarjeta-cuerpo { flex: 1 1 50%; align-self: center; padding: 2rem; }
+
+    .rejilla-opciones { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .reserva-formulario { padding: 2rem; }
+    .formulario { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    .campo-completo { grid-column: 1 / -1; }
+    .boton-completo { width: auto; }
+    .opcion .boton-completo,
+    .formulario .boton-completo { width: 100%; }
+}
+
+/* Laptops: 1024px - el menú pasa a ser horizontal y el checkout se divide en 2 columnas */
+@media (min-width: 1024px) {
+    .menu-boton { display: none; }
+
+    .menu {
+        display: block;
+        width: auto;
+        padding-bottom: 0;
+    }
+    .menu ul { display: flex; gap: 0.5rem; }
+    .menu a {
+        border-bottom: 0;
+        border-radius: 999px;
+        padding: 0.5rem 1.1rem;
+    }
+    .menu a:hover,
+    .menu a:focus-visible {
+        padding-left: 1.1rem;
+        background: var(--verde-oscuro);
+        color: var(--blanco);
+    }
+
+    .portada {
+        min-height: 90vh;
+        min-height: 90dvh;
+    }
+    .seccion { padding: 4.5rem 0; }
+    .checkout-grid { grid-template-columns: 1.4fr 1fr; }
+    .rejilla-contacto { grid-template-columns: repeat(4, 1fr); }
+    .pie-contenido { flex-direction: row; justify-content: space-between; text-align: left; }
+}
+
+/* Escritorio grande: 1440px */
+@media (min-width: 1440px) {
+    .contenedor { max-width: 1280px; }
+}
+
+/* Movimiento reducido: se quitan las animaciones no esenciales */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+    .tarjeta:hover,
+    .opcion-tarjeta:hover,
+    .boton:hover { transform: none; }
+}
+/* ---------- 14. SISTEMA DE PESTAÑAS Y HISTORIAL ---------- */
+.pestanas-contenedor {
+    background: var(--blanco);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+.pestanas-botones {
+    display: flex;
+    background: var(--oscuro);
+    border-bottom: 3px solid var(--verde);
+}
+.btn-pestana {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--pie-muted);
+    font: inherit;
+    font-weight: bold;
+    padding: 1rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s, color 0.3s;
+}
+.btn-pestana:hover {
+    color: var(--blanco);
+    background: var(--oscuro-2);
+}
+.btn-pestana.activo {
+    background: var(--verde-oscuro);
+    color: var(--blanco);
+}
+
+.contenido-pestana {
+    display: none;
+    padding: 0;
+}
+.contenido-pestana.activo {
+    display: block;
+}
+
+/* Panel de Historial de Reservas */
+.panel-historial {
+    padding: 2rem;
+}
+.historial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.boton-secundario-rojo {
+    background: transparent;
+    border: 2px solid var(--error);
+    color: var(--error);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.boton-secundario-rojo:hover {
+    background: var(--error);
+    color: var(--blanco);
+}
+
+.grid-historial {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+@media (min-width: 768px) {
+    .grid-historial {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.tarjeta-historial {
+    background: var(--gris);
+    border-left: 5px solid var(--verde-oscuro);
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: var(--sombra);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.tarjeta-historial h4 {
+    color: var(--verde-oscuro);
+    font-size: 1.15rem;
+}
+.tarjeta-historial p {
+    font-size: 0.9rem;
+    color: var(--texto-suave);
+}
+.historial-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--borde-tabla);
+    font-weight: bold;
+}
+.historial-precio {
+    color: var(--verde-oscuro);
+    font-size: 1.2rem;
+}
+.sin-reservas {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--texto-suave);
+    font-style: italic;
+}
