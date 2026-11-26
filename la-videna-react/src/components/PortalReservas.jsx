@@ -1,6 +1,7 @@
-
 import { useAuth } from '../context/AuthContext';
 import { useState, useMemo, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import Swal from 'sweetalert2';
 import {
     REGEX_CELULAR_PERU,
     obtenerFechaLocalISO,
@@ -10,6 +11,11 @@ import {
 } from '../utils/motorReservas';
 
 const DURACIONES_RAPIDAS = [1, 1.5, 2, 3];
+
+const obtenerHoraActual = () => {
+    const ahora = new Date();
+    return `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+};
 
 export default function PortalReservas({
     reservas,
@@ -36,27 +42,64 @@ export default function PortalReservas({
 
     const hoyISO = useMemo(() => obtenerFechaLocalISO(), []);
 
-    const [nombre, setNombre] = useState('');
-    const [celular, setCelular] = useState('');
-    const [fecha, setFecha] = useState(hoyISO);
-    const [horaInicio, setHoraInicio] = useState('19:00');
-    const [duracion, setDuracion] = useState(2);
-    const [comentarios, setComentarios] = useState('');
+    // ---------- React Hook Form (S17) ----------
+    // useForm reemplaza los useState de cada campo: registra los inputs,
+    // valida con reglas declarativas y entrega los errores en formState.
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors, isSubmitting }
+    } = useForm({
+        mode: 'onTouched', // valida al salir del campo y luego en cada cambio
+        defaultValues: {
+            nombre: '',
+            celular: '',
+            fecha: hoyISO,
+            horaInicio: '19:00',
+            duracion: 2,
+            comentarios: ''
+        }
+    });
+
+    // watch() permite leer los valores en vivo para la cotización y el ticket
+    const [celular, fecha, horaInicio, duracion] = watch([
+        'celular',
+        'fecha',
+        'horaInicio',
+        'duracion'
+    ]);
+
     const [ultimaCreada, setUltimaCreada] = useState(null);
 
     const [filtroFecha, setFiltroFecha] = useState(hoyISO);
     const [filtroCancha, setFiltroCancha] = useState('todas');
 
+    // Si hay sesión iniciada, se autocompletan nombre y celular
     useEffect(() => {
         if (usuario) {
-            setNombre(usuario.nombreCompleto || '');
-            setCelular(usuario.telefono || '');
+            setValue('nombre', usuario.nombreCompleto || '');
+            setValue('celular', usuario.telefono || '');
         }
-    }, [usuario]);
+    }, [usuario, setValue]);
 
+    // Al cambiar cancha, fecha u hora se oculta el aviso de la última reserva creada
+    useEffect(() => {
+        setUltimaCreada(null);
+    }, [canchaActiva, fecha, horaInicio]);
+
+    // El celular solo acepta números (máx. 9) antes de pasar a React Hook Form
+    const registroCelular = register('celular', {
+        required: 'El celular es obligatorio.',
+        pattern: {
+            value: REGEX_CELULAR_PERU,
+            message: 'Debe iniciar con 9 y tener 9 dígitos.'
+        }
+    });
     const manejarCambioCelular = (e) => {
-        const soloNumeros = e.target.value.replace(/\D/g, '').slice(0, 9);
-        setCelular(soloNumeros);
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 9);
+        registroCelular.onChange(e);
     };
 
     const estadoCelular = useMemo(() => {
@@ -77,21 +120,23 @@ export default function PortalReservas({
     }, [canchaActiva, fecha, horaInicio, duracion, reservas]);
 
     // 1. Validación de hora pasada para hoy
-    const ahora = new Date();
-    const horaActualStr = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+    const horaActualStr = obtenerHoraActual();
     const esFechaPasada = Boolean(fecha && horaInicio && fecha === hoyISO && horaInicio < horaActualStr);
 
-    const manejarSubmit = (e) => {
+    // handleSubmit ya hace e.preventDefault() y solo llama a esta función
+    // cuando todas las reglas de validación se cumplen.
+    const onSubmit = async (datos) => {
+        if (!cotizacion || cotizacion.conflicto) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Horario no disponible',
+                text: 'Existe un cruce de horario con otra reserva. Elige otra hora o cancha.',
+                confirmButtonColor: '#0f6b2e'
+            });
+            return;
+        }
 
-        if (fecha < hoyISO || (fecha === hoyISO && horaInicio < horaActualStr)) {
-            alert('No puedes realizar una reserva en una fecha u hora que ya pasó.');
-            return;
-        }
-        e.preventDefault();
-        if (!nombre.trim() || !REGEX_CELULAR_PERU.test(celular) || !cotizacion || cotizacion.conflicto) {
-            alert('Por favor verifica que todos los datos sean válidos y que no exista cruce de horario.');
-            return;
-        }
+        const { nombre, celular, fecha, horaInicio, duracion, comentarios } = datos;
 
         const codigoCorto = 'VID-' + Math.random().toString(36).substring(2, 6).toUpperCase();
         const nuevaReserva = {
@@ -125,7 +170,7 @@ export default function PortalReservas({
             auditoria: { fechaCreacion: new Date().toISOString() }
         };
 
-        onAgregarReserva(nuevaReserva);
+        await onAgregarReserva(nuevaReserva);
         setUltimaCreada(nuevaReserva);
         setFiltroFecha(fecha);
     };
@@ -184,17 +229,22 @@ export default function PortalReservas({
                             </div>
 
                             <div className="checkout-grid">
-                                <form className="formulario" onSubmit={manejarSubmit} noValidate>
+                                <form className="formulario" onSubmit={handleSubmit(onSubmit)} noValidate>
                                     <div className="campo campo-completo">
                                         <label htmlFor="nombre">Nombre completo del responsable</label>
                                         <input
                                             type="text"
                                             id="nombre"
-                                            value={nombre}
-                                            onChange={(e) => setNombre(e.target.value)}
+                                            className={errors.nombre ? 'input-error' : ''}
                                             placeholder="Ej.: Julio César Rondán"
-                                            required
+                                            aria-invalid={errors.nombre ? 'true' : 'false'}
+                                            {...register('nombre', {
+                                                required: 'El nombre del responsable es obligatorio.',
+                                                validate: (v) => v.trim().length >= 3 || 'Escribe al menos 3 letras.',
+                                                maxLength: { value: 80, message: 'Máximo 80 caracteres.' }
+                                            })}
                                         />
+                                        {errors.nombre && <small className="texto-validacion error" role="alert">✖ {errors.nombre.message}</small>}
                                     </div>
 
                                     <div className="campo">
@@ -202,23 +252,26 @@ export default function PortalReservas({
                                         <input
                                             type="tel"
                                             id="celular"
-                                            className={estadoCelular.claseInput}
-                                            value={celular}
-                                            onChange={manejarCambioCelular}
+                                            className={errors.celular ? 'input-error' : estadoCelular.claseInput}
                                             inputMode="numeric"
                                             maxLength={9}
                                             placeholder="Ej.: 982494280"
-                                            required
+                                            aria-invalid={errors.celular ? 'true' : 'false'}
+                                            {...registroCelular}
+                                            onChange={manejarCambioCelular}
                                         />
-                                        <small className={estadoCelular.claseTexto}>{estadoCelular.mensaje}</small>
+                                        {errors.celular
+                                            ? <small className="texto-validacion error" role="alert">✖ {errors.celular.message}</small>
+                                            : <small className={estadoCelular.claseTexto}>{estadoCelular.mensaje}</small>}
                                     </div>
 
                                     <div className="campo">
                                         <label htmlFor="tipo-cancha">Instalación deportiva</label>
+                                        {/* La cancha vive en ReservasContext (se elige también desde el catálogo) */}
                                         <select
                                             id="tipo-cancha"
                                             value={canchaActiva}
-                                            onChange={(e) => { setCanchaActiva(e.target.value); setUltimaCreada(null); }}
+                                            onChange={(e) => setCanchaActiva(e.target.value)}
                                             required
                                         >
                                             <option value="">Selecciona una cancha</option>
@@ -234,10 +287,15 @@ export default function PortalReservas({
                                             type="date"
                                             id="fecha"
                                             min={hoyISO}
-                                            value={fecha}
-                                            onChange={(e) => { setFecha(e.target.value); setUltimaCreada(null); }}
-                                            required
+                                            className={errors.fecha ? 'input-error' : ''}
+                                            aria-invalid={errors.fecha ? 'true' : 'false'}
+                                            {...register('fecha', {
+                                                required: 'Elige la fecha del partido.',
+                                                validate: (v) => v >= obtenerFechaLocalISO() || 'La fecha no puede ser anterior a hoy.',
+                                                deps: ['horaInicio'] // al cambiar la fecha se vuelve a validar la hora
+                                            })}
                                         />
+                                        {errors.fecha && <small className="texto-validacion error" role="alert">✖ {errors.fecha.message}</small>}
                                     </div>
 
                                     <div className="campo">
@@ -246,10 +304,20 @@ export default function PortalReservas({
                                             type="time"
                                             id="hora-inicio"
                                             min={fecha === hoyISO ? horaActualStr : undefined}
-                                            value={horaInicio}
-                                            onChange={(e) => { setHoraInicio(e.target.value); setUltimaCreada(null); }}
-                                            required
+                                            className={errors.horaInicio || esFechaPasada ? 'input-error' : ''}
+                                            aria-invalid={errors.horaInicio || esFechaPasada ? 'true' : 'false'}
+                                            {...register('horaInicio', {
+                                                required: 'Elige la hora de inicio.',
+                                                // El 2.º parámetro trae todos los valores: se compara con la fecha elegida
+                                                validate: (v, valores) =>
+                                                    valores.fecha !== obtenerFechaLocalISO() ||
+                                                    v >= obtenerHoraActual() ||
+                                                    'Esa hora ya pasó hoy.'
+                                            })}
                                         />
+                                        {errors.horaInicio && !esFechaPasada && (
+                                            <small className="texto-validacion error" role="alert">✖ {errors.horaInicio.message}</small>
+                                        )}
                                     </div>
 
                                     <div className="campo campo-completo">
@@ -261,7 +329,7 @@ export default function PortalReservas({
                                                         key={h}
                                                         type="button"
                                                         className={`chip-hora ${parseFloat(duracion) === h ? 'activo' : ''}`}
-                                                        onClick={() => setDuracion(h)}
+                                                        onClick={() => setValue('duracion', h, { shouldValidate: true })}
                                                     >
                                                         {h}h
                                                     </button>
@@ -273,11 +341,19 @@ export default function PortalReservas({
                                                 min="1"
                                                 max="24"
                                                 step="0.5"
-                                                value={duracion}
-                                                onChange={(e) => setDuracion(e.target.value)}
-                                                required
+                                                className={errors.duracion ? 'input-error' : ''}
+                                                aria-invalid={errors.duracion ? 'true' : 'false'}
+                                                {...register('duracion', {
+                                                    valueAsNumber: true,
+                                                    required: 'Indica la duración.',
+                                                    min: { value: 1, message: 'La duración mínima es 1 hora.' },
+                                                    max: { value: 24, message: 'La duración máxima es 24 horas.' },
+                                                    validate: (v) =>
+                                                        (!isNaN(v) && Number.isInteger(v * 2)) || 'Usa bloques de media hora (ej.: 1.5).'
+                                                })}
                                             />
                                         </div>
+                                        {errors.duracion && <small className="texto-validacion error" role="alert">✖ {errors.duracion.message}</small>}
                                     </div>
 
                                     <div className="campo campo-completo">
@@ -285,10 +361,13 @@ export default function PortalReservas({
                                         <textarea
                                             id="comentarios"
                                             rows="2"
-                                            value={comentarios}
-                                            onChange={(e) => setComentarios(e.target.value)}
                                             placeholder="Ej.: Campeonato relámpago, préstamo de chalecos..."
+                                            className={errors.comentarios ? 'input-error' : ''}
+                                            {...register('comentarios', {
+                                                maxLength: { value: 200, message: 'Máximo 200 caracteres.' }
+                                            })}
                                         />
+                                        {errors.comentarios && <small className="texto-validacion error" role="alert">✖ {errors.comentarios.message}</small>}
                                     </div>
 
                                     {cotizacion?.conflicto && (
@@ -307,9 +386,9 @@ export default function PortalReservas({
                                         <button
                                             className="boton boton-primario boton-completo"
                                             type="submit"
-                                            disabled={!cotizacion || Boolean(cotizacion.conflicto) || esFechaPasada}
+                                            disabled={!cotizacion || Boolean(cotizacion.conflicto) || esFechaPasada || isSubmitting}
                                         >
-                                            Confirmar y registrar reserva
+                                            {isSubmitting ? 'Registrando...' : 'Confirmar y registrar reserva'}
                                         </button>
                                     </div>
                                 </form>
