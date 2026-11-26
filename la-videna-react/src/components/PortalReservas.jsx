@@ -79,8 +79,17 @@ export default function PortalReservas({
     // Si hay sesión iniciada, se autocompletan nombre y celular
     useEffect(() => {
         if (usuario) {
-            setValue('nombre', usuario.nombreCompleto || '');
+
+        if (usuario) {
+            setValue('nombre', usuario.nombreCompleto || usuario.nombre_completo || '');
             setValue('celular', usuario.telefono || '');
+        } else {
+            // Limpia los datos al cerrar sesión y quedar como invitado
+            setValue('nombre', '');
+            setValue('celular', '');
+            setValue('comentarios', '');
+        }
+
         }
     }, [usuario, setValue]);
 
