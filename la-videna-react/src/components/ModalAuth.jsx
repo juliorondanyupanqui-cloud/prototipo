@@ -13,6 +13,7 @@ const estiloError = { color: '#c0392b', fontSize: '0.82rem', marginTop: '-0.5rem
 export default function ModalAuth({ abierto, alCerrar }) {
     const { login, registrar } = useAuth();
     const [esRegistro, setEsRegistro] = useState(false);
+    const [mostrarPassword, setMostrarPassword] = useState(false);
 
     // ---------- React Hook Form (S17) ----------
     const {
@@ -30,6 +31,18 @@ export default function ModalAuth({ abierto, alCerrar }) {
         reset();
     }, [esRegistro, reset]);
 
+    // Al cerrar el modal la contraseña vuelve a quedar oculta
+    const cerrarModal = () => {
+        setMostrarPassword(false);
+        alCerrar();
+    };
+
+    // Al cambiar entre login y registro también se oculta
+    const cambiarModo = () => {
+        setMostrarPassword(false);
+        setEsRegistro(!esRegistro);
+    };
+
     if (!abierto) return null;
 
     const onSubmit = async (datos) => {
@@ -40,7 +53,7 @@ export default function ModalAuth({ abierto, alCerrar }) {
                 await login(datos.email, datos.password);
             }
             reset();
-            alCerrar();
+            cerrarModal();
         } catch (error) {
             Swal.fire({
                 icon: 'error',
@@ -63,7 +76,7 @@ export default function ModalAuth({ abierto, alCerrar }) {
                     <h3 style={{ margin: 0, color: '#0e1a14' }}>
                         {esRegistro ? 'Crear Cuenta' : 'Iniciar Sesión'}
                     </h3>
-                    <button type="button" onClick={alCerrar} aria-label="Cerrar" style={{ background: 'none', border: 'none', fontSize: '1.3rem', cursor: 'pointer' }}>✕</button>
+                    <button type="button" onClick={cerrarModal} aria-label="Cerrar" style={{ background: 'none', border: 'none', fontSize: '1.3rem', cursor: 'pointer' }}>✕</button>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
@@ -112,20 +125,44 @@ export default function ModalAuth({ abierto, alCerrar }) {
                     />
                     {errors.email && <small role="alert" style={estiloError}>✖ {errors.email.message}</small>}
 
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        aria-label="Contraseña"
-                        aria-invalid={errors.password ? 'true' : 'false'}
-                        style={errors.password ? estiloInputError : estiloInput}
-                        {...register('password', {
-                            required: 'La contraseña es obligatoria.',
-                            // Solo al registrarse se exige un mínimo de longitud
-                            minLength: esRegistro
-                                ? { value: 6, message: 'Mínimo 6 caracteres.' }
-                                : undefined
-                        })}
-                    />
+                    {/* Contraseña con botón para mostrarla u ocultarla */}
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type={mostrarPassword ? 'text' : 'password'}
+                            placeholder="Contraseña"
+                            aria-label="Contraseña"
+                            autoComplete={esRegistro ? 'new-password' : 'current-password'}
+                            aria-invalid={errors.password ? 'true' : 'false'}
+                            style={{
+                                ...(errors.password ? estiloInputError : estiloInput),
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                paddingRight: '3rem'
+                            }}
+                            {...register('password', {
+                                required: 'La contraseña es obligatoria.',
+                                // Solo al registrarse se exige un mínimo de longitud
+                                minLength: esRegistro
+                                    ? { value: 6, message: 'Mínimo 6 caracteres.' }
+                                    : undefined
+                            })}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setMostrarPassword((visible) => !visible)}
+                            aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            aria-pressed={mostrarPassword}
+                            title={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            style={{
+                                position: 'absolute', top: '50%', right: '0.4rem', transform: 'translateY(-50%)',
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                fontSize: '1.15rem', lineHeight: 1, padding: '0.3rem',
+                                opacity: mostrarPassword ? 1 : 0.6
+                            }}
+                        >
+                            {mostrarPassword ? '🙈' : '👁'}
+                        </button>
+                    </div>
                     {errors.password && <small role="alert" style={estiloError}>✖ {errors.password.message}</small>}
 
                     <button
@@ -144,7 +181,7 @@ export default function ModalAuth({ abierto, alCerrar }) {
                     {esRegistro ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}{' '}
                     <button
                         type="button"
-                        onClick={() => setEsRegistro(!esRegistro)}
+                        onClick={cambiarModo}
                         style={{ background: 'none', border: 'none', color: '#0f6b2e', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
                     >
                         {esRegistro ? 'Inicia sesión' : 'Regístrate aquí'}

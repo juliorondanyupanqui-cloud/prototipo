@@ -857,6 +857,20 @@ button:focus-visible,
     font-weight: bold;
 }
 
+/* Aviso de disponibilidad junto al campo de hora */
+.texto-validacion.disponibilidad-libre {
+    color: var(--verde-oscuro);
+    font-weight: bold;
+}
+.texto-validacion.disponibilidad-limitado {
+    color: #b7791f;
+    font-weight: bold;
+}
+.texto-validacion.disponibilidad-ocupado {
+    color: var(--error);
+    font-weight: bold;
+}
+
 .campo input.input-error {
     border-color: var(--error) !important;
     background-color: #fff8f8;

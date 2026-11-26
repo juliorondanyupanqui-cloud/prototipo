@@ -58,6 +58,74 @@ export const verificarConflictoHorario = (canchaId, fechaStr, horaInicioStr, dur
     });
 };
 
+// Formatea un timestamp como HH:MM y agrega "(día siguiente)" si cae en otra fecha
+const formatearHoraDesde = (timestamp, fechaBaseStr) => {
+    const d = new Date(timestamp);
+    const hhmm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const fechaD = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return fechaD === fechaBaseStr ? hhmm : `${hhmm} (día siguiente)`;
+};
+
+// Formatea horas decimales: 1 -> "1 h", 1.5 -> "1 h 30 min", 0.5 -> "30 min"
+const formatearDuracion = (horas) => {
+    const h = Math.floor(horas);
+    const min = Math.round((horas - h) * 60);
+    if (h === 0) return `${min} min`;
+    return min ? `${h} h ${min} min` : `${h} h`;
+};
+
+/**
+ * Indica si la hora elegida está libre en la cancha y hasta cuándo.
+ * Devuelve { estado: 'libre' | 'limitado' | 'ocupado', mensaje } o null si faltan datos.
+ *  - ocupado:  la hora de inicio cae dentro de otra reserva.
+ *  - limitado: la hora está libre, pero la duración elegida choca con la siguiente reserva.
+ *  - libre:    no hay cruce con la duración elegida.
+ */
+export const consultarDisponibilidadHora = (canchaId, fechaStr, horaInicioStr, duracionHoras, reservasActivas = []) => {
+    if (!canchaId || !fechaStr || !horaInicioStr) return null;
+
+    const inicioMs = convertirATimestamp(fechaStr, horaInicioStr);
+    if (Number.isNaN(inicioMs)) return null;
+
+    const reservasCancha = reservasActivas
+        .filter((res) => res.detallesReserva?.instalacionId === canchaId)
+        .map((res) => ({
+            inicio: Number(res.detallesReserva.inicioTimestamp),
+            fin: Number(res.detallesReserva.finTimestamp)
+        }))
+        .filter((res) => !Number.isNaN(res.inicio) && !Number.isNaN(res.fin));
+
+    // 1. ¿La hora de inicio cae dentro de una reserva existente?
+    const ocupando = reservasCancha.find((res) => inicioMs >= res.inicio && inicioMs < res.fin);
+    if (ocupando) {
+        return {
+            estado: 'ocupado',
+            mensaje: `✖ Ocupado hasta las ${formatearHoraDesde(ocupando.fin, fechaStr)}. Elige esa hora o una posterior.`
+        };
+    }
+
+    // 2. Siguiente reserva que empieza después de la hora elegida
+    const siguiente = reservasCancha
+        .filter((res) => res.inicio > inicioMs)
+        .sort((a, b) => a.inicio - b.inicio)[0];
+
+    if (!siguiente) {
+        return { estado: 'libre', mensaje: '✔ Libre: no hay reservas después.' };
+    }
+
+    const horasDisponibles = (siguiente.inicio - inicioMs) / 3600000;
+    const horaSiguiente = formatearHoraDesde(siguiente.inicio, fechaStr);
+
+    if (duracionHoras > horasDisponibles) {
+        return {
+            estado: 'limitado',
+            mensaje: `⚠ Libre, pero a las ${horaSiguiente} empieza otra reserva: máximo ${formatearDuracion(horasDisponibles)}.`
+        };
+    }
+
+    return { estado: 'libre', mensaje: `✔ Libre hasta las ${horaSiguiente}.` };
+};
+
 export const calcularCotizacion = (tipoCancha, fecha, horaInicio, duracionNum, reservasActivas = []) => {
     if (!CANCHAS[tipoCancha] || !fecha || !horaInicio || isNaN(duracionNum) || duracionNum < 1) {
         return null;

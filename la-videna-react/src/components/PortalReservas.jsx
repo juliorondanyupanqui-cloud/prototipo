@@ -6,6 +6,7 @@ import {
     REGEX_CELULAR_PERU,
     obtenerFechaLocalISO,
     calcularCotizacion,
+    consultarDisponibilidadHora,
     generarUrlWhatsApp,
     imprimirTicketReserva
 } from '../utils/motorReservas';
@@ -126,6 +127,11 @@ export default function PortalReservas({
 
     const cotizacion = useMemo(() => {
         return calcularCotizacion(canchaActiva, fecha, horaInicio, parseFloat(duracion), reservas);
+    }, [canchaActiva, fecha, horaInicio, duracion, reservas]);
+
+    // Aviso de disponibilidad junto al campo de hora (se actualiza al cambiar cancha, fecha, hora o duración)
+    const disponibilidadHora = useMemo(() => {
+        return consultarDisponibilidadHora(canchaActiva, fecha, horaInicio, parseFloat(duracion), reservas);
     }, [canchaActiva, fecha, horaInicio, duracion, reservas]);
 
     // 1. Validación de hora pasada para hoy
@@ -326,6 +332,14 @@ export default function PortalReservas({
                                         />
                                         {errors.horaInicio && !esFechaPasada && (
                                             <small className="texto-validacion error" role="alert">✖ {errors.horaInicio.message}</small>
+                                        )}
+                                        {!errors.horaInicio && !esFechaPasada && disponibilidadHora && (
+                                            <small
+                                                className={`texto-validacion disponibilidad-${disponibilidadHora.estado}`}
+                                                aria-live="polite"
+                                            >
+                                                {disponibilidadHora.mensaje}
+                                            </small>
                                         )}
                                     </div>
 
