@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NavLink, Link } from 'react-router-dom';
 
 export default function Header() {
     const [menuAbierto, setMenuAbierto] = useState(false);
@@ -8,10 +9,10 @@ export default function Header() {
     return (
         <header className="encabezado">
             <div className="contenedor barra">
-                <a className="marca" href="#inicio" onClick={cerrarMenu}>
+                <Link className="marca" to="/" onClick={cerrarMenu}>
                     <span className="marca-pequena">Complejo Deportivo</span>
                     <span className="marca-nombre">La Videna</span>
-                </a>
+                </Link>
 
                 <input
                     type="checkbox"
@@ -26,11 +27,11 @@ export default function Header() {
 
                 <nav className="menu" aria-label="Navegación principal">
                     <ul>
-                        <li><a href="#inicio" onClick={cerrarMenu}>Inicio</a></li>
-                        <li><a href="#canchas" onClick={cerrarMenu}>Canchas</a></li>
-                        <li><a href="#tarifas" onClick={cerrarMenu}>Tarifas</a></li>
-                        <li><a href="#reservas" onClick={cerrarMenu}>Reservas</a></li>
-                        <li><a href="#contacto" onClick={cerrarMenu}>Contacto</a></li>
+                        <li><NavLink to="/" end onClick={cerrarMenu}>Inicio</NavLink></li>
+                        <li><NavLink to="/canchas" onClick={cerrarMenu}>Canchas</NavLink></li>
+                        <li><NavLink to="/tarifas" onClick={cerrarMenu}>Tarifas</NavLink></li>
+                        <li><NavLink to="/reservas" onClick={cerrarMenu}>Reservas</NavLink></li>
+                        <li><NavLink to="/contacto" onClick={cerrarMenu}>Contacto</NavLink></li>
                     </ul>
                 </nav>
             </div>
